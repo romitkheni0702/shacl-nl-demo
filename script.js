@@ -99,7 +99,7 @@
       metrics: { cost: 0.00019, tokens: 1120, time: 3.4 },
       paras: [
         { html: 'Every <strong>Person</strong> must have at least one <strong>name</strong>, and that name must be plain text.', lines: [[3,6]] },
-        { html: 'The <strong>age</strong>, if provided, must be a whole number that is zero or greater — negative ages are not permitted.', lines: [[7,10]] },
+        { html: 'The <strong>age</strong>, if provided, must be a whole number that is zero or greater - negative ages are not permitted.', lines: [[7,10]] },
         { html: 'Together these rules define a valid Person record: a required plain-text name and an optional, non-negative age.', lines: [[1,10]] }
       ]
     },
@@ -109,7 +109,7 @@
         { html: 'The shape applies to every resource classified as <strong>Person</strong>.', lines: [[1,2]] },
         { html: 'Each Person is required to have a <strong>name</strong> property.', lines: [[3,4]] },
         { html: 'The name value must be a plain-text string, so URIs or numbers are rejected.', lines: [[5,5]] },
-        { html: 'A minimum count of one enforces that the name is mandatory — a Person without a name is invalid.', lines: [[6,6]] },
+        { html: 'A minimum count of one enforces that the name is mandatory - a Person without a name is invalid.', lines: [[6,6]] },
         { html: 'The optional <strong>age</strong> property, when present, must be a non-negative integer.', lines: [[7,10]] },
         { html: 'Summary: a valid Person has a required plain-text name and an optional, non-negative integer age.', lines: [[1,10]] }
       ]
@@ -213,7 +213,7 @@
 
     genBtn.disabled = true;
     genBtn.className = 'gen-btn busy';
-    genBtn.innerHTML = '<span class="spinner"></span> Generating…';
+    genBtn.innerHTML = '<span class="spinner"></span> Generating...';
 
     var key = modelSel.value + '|' + modeSel.value;
     var payload = OUTPUTS[key];
