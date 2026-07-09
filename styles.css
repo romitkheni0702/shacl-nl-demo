@@ -107,7 +107,13 @@ h2.h {
 .nav-cta:hover { background: #000; transform: translateY(-1px); }
 .nav-progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0%;
   background: linear-gradient(90deg, var(--brand-500), var(--logo-arrow)); transition: width .1s linear; }
-@media (max-width: 720px) { .nav-links a:not(.nav-cta) { display: none; } }
+@media (max-width: 720px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-inner { padding: 10px 16px; gap: 10px; }
+  .nav-logo { height: 30px; max-width: 58vw; }
+  .nav-links { gap: 4px; flex-shrink: 0; }
+  .nav-links .nav-cta { padding: 8px 11px !important; font-size: 0; gap: 0; }
+}
 
 /* ============================================================
    HERO
@@ -199,6 +205,7 @@ h2.h {
 
 .app { display: grid; grid-template-columns: 1fr 1fr; min-height: 430px; }
 @media (max-width: 760px) { .app { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .app-pane { padding: 16px 14px; } .metrics { gap: 8px; } .metric { padding: 10px 9px; } }
 .app-pane { padding: 18px; }
 .app-pane.left { border-right: 1px solid var(--line); background: linear-gradient(180deg,#ffffff,#fbfcff); }
 @media (max-width: 760px) { .app-pane.left { border-right: none; border-bottom: 1px solid var(--line); } }
