@@ -50,7 +50,8 @@
   counters.forEach(function (el) { cio.observe(el); });
 
   /* ============================================================
-     DEMO MOCK - autoplay loop
+     DEMO - interactive: user picks Model + Mode, presses Generate,
+     hovers a paragraph to highlight matching SHACL lines.
      ============================================================ */
   var SHAPE = [
     [['e-p','ex:PersonShape '], ['tk','a '], ['e-k','sh:NodeShape'], ['tk',' ;']],
@@ -65,101 +66,133 @@
     [['tk','    '], ['e-p','sh:minInclusive'], ['tk',' '], ['e-n','0'], ['tk',' ] .']]
   ];
 
-  var OUT = [
-    'Every <strong>Person</strong> must have at least one name, and that name must be plain text.',
-    'The age, if provided, must be a whole number that is 0 or greater.',
-    'Together these rules define a valid Person record: a required name and an optional, non-negative age.'
-  ];
+  // Line ranges (1-indexed) mapped to each paragraph. "lines" is a list of [start,end].
+  // Six pre-baked combinations of Model × Mode. Metrics differ visibly so users see the
+  // "Mode B is expensive" and "Model 2 costs more" narratives from the report.
+  var OUTPUTS = {
+    'm1|A': {
+      metrics: { cost: 0.00003, tokens: 1040, time: 2.1 },
+      paras: [
+        { html: 'Every <strong>Person</strong> must have at least one name, and that name must be plain text.', lines: [[3,6]] },
+        { html: 'If an <strong>age</strong> is given, it must be a whole number of zero or greater.', lines: [[7,10]] },
+        { html: 'Together, these rules define a valid Person record: a required name and an optional, non-negative age.', lines: [[1,10]] }
+      ]
+    },
+    'm1|B': {
+      metrics: { cost: 0.00048, tokens: 15200, time: 18.2 },
+      paras: [
+        { html: 'Constraint 1: the shape targets every instance of <strong>Person</strong>.', lines: [[1,2]] },
+        { html: 'Constraint 2: each Person requires a <strong>name</strong> value.', lines: [[3,4]] },
+        { html: 'Constraint 3: the name must be a plain-text (<em>string</em>) value.', lines: [[5,5]] },
+        { html: 'Constraint 4: at least one name is required (minimum count is 1).', lines: [[6,6]] },
+        { html: 'Constraint 5: if an <strong>age</strong> is present, it must be a non-negative integer.', lines: [[7,10]] }
+      ]
+    },
+    'm1|C': {
+      metrics: { cost: 0.00002, tokens: 620, time: 1.8 },
+      paras: [
+        { html: 'A <strong>Person</strong> must have a name, which is a string, and there must be at least one.', lines: [[3,6]] },
+        { html: 'A Person may have an <strong>age</strong>; if present it is an integer of 0 or greater.', lines: [[7,10]] }
+      ]
+    },
+    'm2|A': {
+      metrics: { cost: 0.00019, tokens: 1120, time: 3.4 },
+      paras: [
+        { html: 'Every <strong>Person</strong> must have at least one <strong>name</strong>, and that name must be plain text.', lines: [[3,6]] },
+        { html: 'The <strong>age</strong>, if provided, must be a whole number that is zero or greater — negative ages are not permitted.', lines: [[7,10]] },
+        { html: 'Together these rules define a valid Person record: a required plain-text name and an optional, non-negative age.', lines: [[1,10]] }
+      ]
+    },
+    'm2|B': {
+      metrics: { cost: 0.00280, tokens: 16800, time: 24.5 },
+      paras: [
+        { html: 'The shape applies to every resource classified as <strong>Person</strong>.', lines: [[1,2]] },
+        { html: 'Each Person is required to have a <strong>name</strong> property.', lines: [[3,4]] },
+        { html: 'The name value must be a plain-text string, so URIs or numbers are rejected.', lines: [[5,5]] },
+        { html: 'A minimum count of one enforces that the name is mandatory — a Person without a name is invalid.', lines: [[6,6]] },
+        { html: 'The optional <strong>age</strong> property, when present, must be a non-negative integer.', lines: [[7,10]] },
+        { html: 'Summary: a valid Person has a required plain-text name and an optional, non-negative integer age.', lines: [[1,10]] }
+      ]
+    },
+    'm2|C': {
+      metrics: { cost: 0.00015, tokens: 680, time: 3.1 },
+      paras: [
+        { html: 'A <strong>Person</strong> must carry at least one <strong>name</strong> written as plain text.', lines: [[3,6]] },
+        { html: 'If an <strong>age</strong> is given, it must be a whole number that is zero or greater.', lines: [[7,10]] },
+        { html: 'Overall, a valid Person record consists of a required name and an optional, non-negative age.', lines: [[1,10]] }
+      ]
+    }
+  };
 
   var editor = document.getElementById('demoEditor');
   var genBtn = document.getElementById('demoGen');
   var skeleton = document.getElementById('demoSkeleton');
   var outText = document.getElementById('demoText');
+  var outEmpty = document.getElementById('demoEmpty');
   var app = document.getElementById('demoApp');
   var modelSel = document.getElementById('demoModel');
   var modeSel = document.getElementById('demoMode');
   var badge = document.getElementById('demoBadge');
-  var CHEV = ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
-  var MODELS = ['GPT-4o mini', 'Claude 4.5 Sonnet', 'DeepSeek V3.2'];
-  var MODES = ['Mode C · Raw Turtle', 'Mode B · Fine-grained', 'Mode A · Structured'];
   var metricEls = {
-    cost: document.querySelector('[data-metric="cost"]'),
-    tokens: document.querySelector('[data-metric="tokens"]'),
-    time: document.querySelector('[data-metric="time"]')
+    cost: document.querySelector('#demoApp [data-metric="cost"]') || document.querySelector('[data-metric="cost"]'),
+    tokens: document.querySelector('#demoApp [data-metric="tokens"]') || document.querySelector('[data-metric="tokens"]'),
+    time: document.querySelector('#demoApp [data-metric="time"]') || document.querySelector('[data-metric="time"]')
   };
   var bars = {
-    cost: document.querySelector('[data-bar="cost"]'),
-    tokens: document.querySelector('[data-bar="tokens"]'),
-    time: document.querySelector('[data-bar="time"]')
+    cost: document.querySelector('#demoApp [data-bar="cost"]') || document.querySelector('[data-bar="cost"]'),
+    tokens: document.querySelector('#demoApp [data-bar="tokens"]') || document.querySelector('[data-bar="tokens"]'),
+    time: document.querySelector('#demoApp [data-bar="time"]') || document.querySelector('[data-bar="time"]')
   };
 
   var timers = [];
   function after(ms, fn) { var id = setTimeout(fn, ms); timers.push(id); return id; }
   function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
-  function setSel(el, label) { el.innerHTML = label + CHEV; }
-  function flashSel(el) { el.classList.add('changing'); after(reduce ? 0 : 280, function () { el.classList.remove('changing'); }); }
+  function lineHTML(parts) {
+    return parts.map(function (p) { return '<span class="' + p[0] + '">' + p[1] + '</span>'; }).join('');
+  }
 
-  function reset() {
-    clearTimers();
+  // Render the SHACL statically (no typing animation) so the user can interact immediately.
+  function renderShape() {
     editor.innerHTML = '';
-    outText.innerHTML = '';
-    outText.style.display = 'block';
-    skeleton.style.display = 'none';
-    genBtn.className = 'gen-btn';
-    genBtn.innerHTML = 'Generate Explanation';
-    setSel(modelSel, 'DeepSeek V3.2');
-    setSel(modeSel, 'Mode A · Structured');
-    badge.innerHTML = '<span class="b-dot"></span> DeepSeek · Mode A';
-    Object.keys(metricEls).forEach(function (k) { bars[k].style.width = '0'; });
+    for (var i = 0; i < SHAPE.length; i++) {
+      var ln = document.createElement('div');
+      ln.className = 'line';
+      ln.setAttribute('data-line', String(i + 1));
+      ln.innerHTML = '<span class="ln">' + (i + 1) + '</span>' + lineHTML(SHAPE[i]);
+      editor.appendChild(ln);
+    }
+  }
+
+  function clearLineHighlight() {
+    editor.querySelectorAll('.line.hl').forEach(function (el) { el.classList.remove('hl'); });
+  }
+  function highlightRanges(ranges) {
+    clearLineHighlight();
+    for (var r = 0; r < ranges.length; r++) {
+      var from = ranges[r][0], to = ranges[r][1];
+      for (var n = from; n <= to; n++) {
+        var el = editor.querySelector('.line[data-line="' + n + '"]');
+        if (el) el.classList.add('hl');
+      }
+    }
+  }
+
+  function currentBadge() {
+    var m = modelSel.value === 'm2' ? 'GPT-4o mini' : 'DeepSeek V3.2';
+    return '<span class="b-dot"></span> ' + m + ' · Mode ' + modeSel.value;
+  }
+
+  function resetMetrics() {
+    Object.keys(metricEls).forEach(function (k) { if (bars[k]) bars[k].style.width = '0'; });
     metricEls.cost.textContent = '$0.00000';
     metricEls.tokens.textContent = '0';
     metricEls.time.textContent = '0.00s';
   }
 
-  // After the shape is typed, visibly pick a model and a strategy, then generate.
-  function cycleSelects() {
-    if (reduce) { generate(); return; }
-    var mi = 0, di = 0;
-    function stepModel() {
-      setSel(modelSel, MODELS[mi]); flashSel(modelSel); mi++;
-      if (mi < MODELS.length) after(380, stepModel); else after(440, stepMode);
-    }
-    function stepMode() {
-      setSel(modeSel, MODES[di]); flashSel(modeSel); di++;
-      if (di < MODES.length) after(380, stepMode); else after(480, generate);
-    }
-    stepModel();
-  }
-
-  function lineHTML(parts) {
-    return parts.map(function (p) { return '<span class="' + p[0] + '">' + p[1] + '</span>'; }).join('');
-  }
-
-  // Type the shape line by line, then run generation.
-  function typeShape() {
-    var i = 0;
-    function nextLine() {
-      if (i >= SHAPE.length) { after(450, cycleSelects); return; }
-      var ln = document.createElement('div');
-      ln.innerHTML = '<span class="ln">' + (i + 1) + '</span>' + lineHTML(SHAPE[i]);
-      // caret on the freshly added line briefly
-      var caret = document.createElement('span'); caret.className = 'caret';
-      ln.appendChild(caret);
-      editor.appendChild(ln);
-      var prevCaret = editor.querySelector('.ln-prev .caret');
-      i++;
-      after(reduce ? 0 : 150, function () {
-        if (caret.parentNode) caret.remove();
-        nextLine();
-      });
-    }
-    nextLine();
-  }
-
   function animateMetric(el, barEl, from, to, fmt, dur) {
     var start = performance.now();
-    barEl.style.width = '100%';
+    if (barEl) barEl.style.width = '100%';
     function tick(now) {
       var t = Math.min((now - start) / dur, 1);
       var eased = 1 - Math.pow(1 - t, 3);
@@ -170,66 +203,109 @@
   }
 
   function generate() {
-    genBtn.className = 'gen-btn go';
-    after(420, function () {
-      genBtn.className = 'gen-btn busy';
-      genBtn.innerHTML = '<span class="spinner"></span> Generating…';
-      skeleton.style.display = 'flex';
-      outText.style.display = 'none';
+    clearTimers();
+    clearLineHighlight();
+    if (outEmpty) outEmpty.style.display = 'none';
+    outText.innerHTML = '';
+    outText.style.display = 'none';
+    skeleton.style.display = 'flex';
+    badge.innerHTML = currentBadge();
 
-      // metrics climb while "thinking"
-      if (!reduce) {
-        animateMetric(metricEls.tokens, bars.tokens, 0, 1041, function (v) { return Math.round(v).toLocaleString(); }, 1500);
-        animateMetric(metricEls.cost, bars.cost, 0, 0.00019, function (v) { return '$' + v.toFixed(5); }, 1500);
-        animateMetric(metricEls.time, bars.time, 0, 2.32, function (v) { return v.toFixed(2) + 's'; }, 1500);
-      } else {
-        metricEls.tokens.textContent = '1,041'; metricEls.cost.textContent = '$0.00019'; metricEls.time.textContent = '2.32s';
-        bars.tokens.style.width = bars.cost.style.width = bars.time.style.width = '100%';
-      }
+    genBtn.disabled = true;
+    genBtn.className = 'gen-btn busy';
+    genBtn.innerHTML = '<span class="spinner"></span> Generating…';
 
-      after(reduce ? 0 : 1700, streamOutput);
-    });
+    var key = modelSel.value + '|' + modeSel.value;
+    var payload = OUTPUTS[key];
+    var m = payload.metrics;
+    resetMetrics();
+    if (!reduce) {
+      animateMetric(metricEls.tokens, bars.tokens, 0, m.tokens, function (v) { return Math.round(v).toLocaleString(); }, 1400);
+      animateMetric(metricEls.cost, bars.cost, 0, m.cost, function (v) { return '$' + v.toFixed(5); }, 1400);
+      animateMetric(metricEls.time, bars.time, 0, m.time, function (v) { return v.toFixed(2) + 's'; }, 1400);
+    } else {
+      metricEls.tokens.textContent = m.tokens.toLocaleString();
+      metricEls.cost.textContent = '$' + m.cost.toFixed(5);
+      metricEls.time.textContent = m.time.toFixed(2) + 's';
+      bars.tokens.style.width = bars.cost.style.width = bars.time.style.width = '100%';
+    }
+
+    after(reduce ? 0 : 1500, function () { streamOutput(payload.paras); });
   }
 
-  function streamOutput() {
+  function streamOutput(paras) {
     skeleton.style.display = 'none';
     outText.style.display = 'block';
-    genBtn.className = 'gen-btn';
-    genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Done';
+    outText.innerHTML = '';
 
     var p = 0;
     function nextPara() {
-      if (p >= OUT.length) { after(3200, loop); return; }
+      if (p >= paras.length) {
+        genBtn.disabled = false;
+        genBtn.className = 'gen-btn';
+        genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Done';
+        return;
+      }
       var el = document.createElement('p');
       el.className = 'reveal-line';
-      el.innerHTML = OUT[p];
+      el.setAttribute('data-lines', JSON.stringify(paras[p].lines));
+      el.innerHTML = paras[p].html;
       outText.appendChild(el);
-      // force reflow then reveal
       void el.offsetWidth;
-      el.style.transition = 'opacity .5s ease, transform .5s ease';
+      el.style.transition = 'opacity .4s ease, transform .4s ease';
       el.style.opacity = '1'; el.style.transform = 'none';
       p++;
-      after(reduce ? 0 : 560, nextPara);
+      after(reduce ? 0 : 380, nextPara);
     }
     nextPara();
   }
 
-  function loop() { reset(); after(500, typeShape); }
+  if (editor && genBtn) {
+    renderShape();
+    genBtn.addEventListener('click', function () {
+      if (genBtn.disabled) return;
+      generate();
+    });
+    // Update the badge live so users see the pending combination.
+    function updateBadge() { badge.innerHTML = currentBadge(); }
+    modelSel.addEventListener('change', updateBadge);
+    modeSel.addEventListener('change', updateBadge);
 
-  // Start when the demo scrolls into view; restart on re-entry.
-  var started = false;
-  if (editor) {
-    var dio = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) {
-          if (!started || timers.length === 0) { started = true; reset(); after(300, typeShape); }
-        } else {
-          // pause/reset when fully out of view so it replays fresh next time
-          if (!e.isIntersecting) { clearTimers(); started = false; }
-        }
-      });
-    }, { threshold: 0.35 });
-    dio.observe(app);
+    // Bidirectional-style linking: paragraph -> lines.
+    // Desktop: hover shows, mouseleave clears.
+    // Touch: tap a paragraph to toggle its highlight (works without a hover state).
+    function activateParagraph(p) {
+      try {
+        var ranges = JSON.parse(p.getAttribute('data-lines'));
+        highlightRanges(ranges);
+        outText.querySelectorAll('p.active').forEach(function (el) { el.classList.remove('active'); });
+        p.classList.add('active');
+      } catch (err) { /* ignore */ }
+    }
+    outText.addEventListener('mouseover', function (e) {
+      var p = e.target.closest('p[data-lines]');
+      if (!p || !outText.contains(p)) return;
+      activateParagraph(p);
+    });
+    outText.addEventListener('mouseleave', function () {
+      clearLineHighlight();
+      outText.querySelectorAll('p.active').forEach(function (el) { el.classList.remove('active'); });
+    });
+    // Tap support: any click on a paragraph toggles it; click on empty space clears.
+    outText.addEventListener('click', function (e) {
+      var p = e.target.closest('p[data-lines]');
+      if (!p) {
+        clearLineHighlight();
+        outText.querySelectorAll('p.active').forEach(function (el) { el.classList.remove('active'); });
+        return;
+      }
+      if (p.classList.contains('active')) {
+        clearLineHighlight();
+        p.classList.remove('active');
+      } else {
+        activateParagraph(p);
+      }
+    });
   }
 
   /* ============================================================

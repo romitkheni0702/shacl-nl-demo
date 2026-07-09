@@ -14,7 +14,7 @@
 
 <!-- reusable logo symbol -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="brandLogo" viewBox="0 12 620 70">
+  <symbol id="brandLogo" viewBox="0 0 620 84">
     <defs><linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#18181b"/><stop offset="100%" stop-color="#3b5bdb"/></linearGradient></defs>
     <g transform="translate(10,12)">
@@ -40,7 +40,7 @@
 <!-- ============================ NAV ============================ -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="#top" aria-label="SHACL to Natural Language, home"><svg class="nav-logo" viewBox="0 12 620 70"><use href="#brandLogo"/></svg></a>
+    <a href="#top" aria-label="SHACL to Natural Language, home"><svg class="nav-logo" viewBox="0 0 620 84"><use href="#brandLogo"/></svg></a>
     <div class="nav-links">
       <a href="#demo">Demo</a>
       <a href="#features">Features</a>
@@ -94,8 +94,8 @@
 <section class="section">
   <div class="wrap">
     <span class="eyebrow reveal">The problem</span>
-    <h2 class="h reveal">SHACL is precise. It is not readable.</h2>
-    <p class="lead reveal d1">Constraint shapes encode exactly what valid data must look like, but in Turtle syntax that only engineers can parse. We turn that same constraint into a sentence a domain expert can confirm at a glance.</p>
+    <h2 class="h reveal">SHACL Is Hard to Understand for Non-Technical Users</h2>
+    <p class="lead reveal d1">Constraint shapes define what constitutes valid data, but their Turtle syntax is difficult for non-technical users to interpret. We therefore translate each constraint into a natural-language sentence that domain experts can verify at a glance.</p>
 
     <div class="flip">
       <div class="flip-card from reveal-scale">
@@ -135,7 +135,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section" id="demo" style="padding-top:0">
   <div class="wrap">
     <span class="eyebrow reveal">Live walkthrough</span>
-    <h2 class="h reveal">See it work, from start to finish.</h2>
+    <h2 class="h reveal">See It Work, From Start to Finish</h2>
     <p class="lead reveal d1">The actual interface, replayed below: type a shape, choose a model and strategy, generate. Cost, tokens, and latency are tracked live, and the explanation streams in as it is written.</p>
 
     <div class="demo-stage reveal-scale">
@@ -154,10 +154,29 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
             <div class="editor" id="demoEditor"></div>
             <div class="controls">
               <div class="ctrl-row">
-                <div class="field"><label>LLM Model</label><div class="sel" id="demoModel">DeepSeek V3.2 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-                <div class="field"><label>Prompt Strategy</label><div class="sel" id="demoMode">Mode A · Structured <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div></div>
+                <div class="field">
+                  <label for="demoModel">LLM Model</label>
+                  <div class="sel-wrap">
+                    <select id="demoModel" class="sel-real">
+                      <option value="m1">DeepSeek V3.2</option>
+                      <option value="m2">GPT-4o mini</option>
+                    </select>
+                    <svg class="sel-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="demoMode">Prompt Strategy</label>
+                  <div class="sel-wrap">
+                    <select id="demoMode" class="sel-real">
+                      <option value="A">Mode A · Structured</option>
+                      <option value="B">Mode B · Fine-grained</option>
+                      <option value="C">Mode C · Raw Turtle</option>
+                    </select>
+                    <svg class="sel-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </div>
+                </div>
               </div>
-              <button class="gen-btn" id="demoGen">Generate Explanation</button>
+              <button class="gen-btn" id="demoGen" type="button">Generate Explanation</button>
             </div>
           </div>
           <!-- RIGHT: output -->
@@ -169,8 +188,9 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
               <div class="metric"><div class="mh">Performance</div><div class="mv" data-metric="time">0.00s</div><div class="ms">response time</div><div class="mbar"><i data-bar="time"></i></div></div>
             </div>
             <div class="out-card">
-              <div class="out-badge" id="demoBadge"><span class="b-dot"></span> DeepSeek · Mode A</div>
+              <div class="out-badge" id="demoBadge"><span class="b-dot"></span> DeepSeek V3.2 · Mode A</div>
               <div id="demoOut">
+                <div class="out-empty" id="demoEmpty">Choose a model and a prompt strategy, then click <b>Generate Explanation</b>. Hover a paragraph to highlight the matching SHACL lines.</div>
                 <div class="out-skeleton" id="demoSkeleton" style="display:none"><i style="width:96%"></i><i style="width:88%"></i><i style="width:92%"></i><i style="width:70%"></i></div>
                 <div class="out-text" id="demoText"></div>
               </div>
@@ -183,7 +203,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
           </div>
         </div>
       </div>
-      <p class="demo-cap">A faithful reconstruction of the live interface, replayed automatically.</p>
+      <p class="demo-cap">Pick a model and a prompt strategy, then hover the explanation to see which SHACL lines each paragraph refers to.</p>
     </div>
   </div>
 </section>
@@ -192,7 +212,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section" id="features">
   <div class="wrap">
     <span class="eyebrow reveal">Everything in the interface</span>
-    <h2 class="h reveal">Built for real SHACL workflows.</h2>
+    <h2 class="h reveal">Feature Overview</h2>
     <p class="lead reveal d1">Every control on the page earns its place, from input handling to model choice to side-by-side comparison.</p>
 
     <div class="feat-grid">
@@ -260,8 +280,8 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
     <div class="shot">
       <div class="shot-copy reveal">
         <span class="eyebrow">Single mode</span>
-        <h2 class="h">One shape, one model, one clear answer.</h2>
-        <p class="lead">The core flow. Paste a shape on the left, configure on the bottom, and read the explanation on the right, with cost, token and latency cards above.</p>
+        <h2 class="h">The Core Flow</h2>
+        <p class="lead">Paste a shape on the left, configure on the bottom, and read the explanation on the right, with cost, token and latency cards above.</p>
         <ul class="feat-list">
           <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Three live metric cards</b> Cost, tokens and response time update with every generation.</span></li>
           <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Edit, refine &amp; history</b> Collapsible panels keep the workspace clean until you need them.</span></li>
@@ -282,7 +302,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section" id="compare" style="padding-top:0">
   <div class="wrap">
     <span class="eyebrow reveal">Compare mode</span>
-    <h2 class="h reveal">The same shape, across models, at once.</h2>
+    <h2 class="h reveal">Compare Multiple Models at Once</h2>
     <p class="lead reveal d1">Run one shape through two or three models in a single pass and read the results side by side. Cost, tokens and latency are measured for each, and the best in class is flagged automatically.</p>
 
     <div class="demo-stage reveal-scale">
@@ -339,7 +359,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section" id="modes">
   <div class="wrap">
     <span class="eyebrow reveal">How it works</span>
-    <h2 class="h reveal">Three ways to prompt a shape.</h2>
+    <h2 class="h reveal">Three Ways to Prompt a Shape</h2>
     <p class="lead reveal d1">The same SHACL goes in; the difference is how much structure we hand the model. We benchmarked all three on 456 explanations.</p>
 
     <div class="modes">
@@ -370,7 +390,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section" id="results">
   <div class="wrap">
     <span class="eyebrow reveal">Backed by evaluation</span>
-    <h2 class="h reveal">Not a demo. A measured result.</h2>
+    <h2 class="h reveal">Not a Demo — A Measured Result</h2>
     <p class="lead reveal d1">We ran 4 models across 3 strategies on 38 shapes from 4 domains, scored every explanation with BERTScore, ROUGE and BLEU, and cross-checked against 80 human ratings.</p>
 
     <div class="res-stats reveal d2">
@@ -412,7 +432,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <section class="section">
   <div class="wrap">
     <span class="eyebrow reveal">Under the hood</span>
-    <h2 class="h reveal">A clean, modern stack.</h2>
+    <h2 class="h reveal">A Clean, Modern Stack</h2>
     <div class="stack-group reveal d1">
       <div class="glabel">Frontend</div>
       <div class="stack">
@@ -473,7 +493,7 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 <footer class="footer">
   <div class="wrap footer-inner">
     <div>
-      <svg class="logo" viewBox="0 12 620 70" style="height:30px"><use href="#brandLogo"/></svg>
+      <svg class="logo" viewBox="0 0 620 84" style="height:36px"><use href="#brandLogo"/></svg>
       <div class="meta">
         <b>SHACL → Natural Language</b><br/>
         Explaining SHACL shapes in plain English with LLMs.<br/>
