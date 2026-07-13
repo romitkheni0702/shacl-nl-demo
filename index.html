@@ -402,7 +402,19 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
 
     <div class="result reveal">
       <div class="result-copy">
-        <span class="cp-tag">Finding 01 · Cost vs quality</span>
+        <span class="cp-tag">Finding 01 · Prompt strategy</span>
+        <h3>A single pass is as accurate as elaborate prompting.</h3>
+        <p>Structured (A) and raw-Turtle (C) prompting tie on quality (<b>0.869</b> vs <b>0.868</b> BERTScore F1), while per-constraint (B) scores lower and costs about <b>10× more</b> (<b>$21.21</b> vs about <b>$2</b> per 1,000 explanations). The simplest prompt wins.</p>
+      </div>
+      <figure class="result-vis reveal-scale d1">
+        <img class="theme-light" src="assets/chart_modes.svg" alt="Prompt strategy quality and cost: strategies A and C tie on BERTScore F1 while strategy B scores lowest and costs about ten times more per 1,000 explanations" loading="lazy" />
+        <img class="theme-dark" src="assets/chart_modes_dark.svg" alt="Prompt strategy quality and cost: strategies A and C tie on BERTScore F1 while strategy B scores lowest and costs about ten times more per 1,000 explanations" loading="lazy" />
+      </figure>
+    </div>
+
+    <div class="result rev reveal">
+      <div class="result-copy">
+        <span class="cp-tag">Finding 02 · Cost vs quality</span>
         <h3>Top quality doesn't have to cost more.</h3>
         <p>An open <b>$0.35</b> model (DeepSeek V3.2) sits right on the quality frontier, matching a <b>$7.44</b> frontier model. Above a capability floor, paying more buys almost nothing.</p>
       </div>
@@ -412,19 +424,31 @@ ex:PersonShape <span class="k">a</span> sh:NodeShape ;
       </figure>
     </div>
 
-    <div class="result rev reveal">
+    <div class="result reveal">
       <div class="result-copy">
-        <span class="cp-tag">Finding 02 · Human agreement</span>
-        <h3>The automatic score tracks people.</h3>
-        <p>Across <b>80</b> human-rated explanations, the automatic BERTScore rises with human judgement (<b>ρ = 0.62</b>), so the rankings reflect what readers actually prefer, not just what a metric likes.</p>
+        <span class="cp-tag">Finding 03 · Model size</span>
+        <h3>Quality scales with size, then flattens.</h3>
+        <p>Across one model family (Llama), BERTScore F1 climbs from <b>0.811</b> at 1B to <b>0.856</b> at 8B, but reaches only <b>0.863</b> at 70B. Gains flatten past about 8B, so a mid-sized model already captures most of the quality.</p>
       </div>
       <figure class="result-vis reveal-scale d1">
-        <img class="theme-light" src="assets/chart_human.svg" alt="Human ratings agree with the automated BERTScore metric, Spearman rho 0.62" loading="lazy" />
-        <img class="theme-dark" src="assets/chart_human_dark.svg" alt="Human ratings agree with the automated BERTScore metric, Spearman rho 0.62" loading="lazy" />
+        <img class="theme-light" src="assets/chart_size.svg" alt="Quality against model size for the Llama family: BERTScore F1 rises from 0.811 at 1B to 0.856 at 8B to 0.863 at 70B, with gains flattening past about 8B" loading="lazy" />
+        <img class="theme-dark" src="assets/chart_size_dark.svg" alt="Quality against model size for the Llama family: BERTScore F1 rises from 0.811 at 1B to 0.856 at 8B to 0.863 at 70B, with gains flattening past about 8B" loading="lazy" />
       </figure>
     </div>
 
-    <p class="res-note">BERTScore F1; cost per 1 000 explanations on raw-Turtle (Mode C) prompting. The full picture - all four models, three prompt strategies, the prompt-mode tie and the consistency checks - is in the repository.</p>
+    <div class="result rev reveal">
+      <div class="result-copy">
+        <span class="cp-tag">Finding 04 · Robustness</span>
+        <h3>The result holds across every domain.</h3>
+        <p>The same picture repeats on Invoice, EPO, SNIK and ChemROF: the frontier models cluster together and Gemma trails. Re-running each model three times moves the score by less than <b>0.002</b> F1, about <b>5× smaller</b> than the gap between models.</p>
+      </div>
+      <figure class="result-vis reveal-scale d1">
+        <img class="theme-light" src="assets/chart_domains.svg" alt="Model quality across four domains, Invoice, EPO, SNIK and ChemROF; the frontier models stay clustered and Gemma trails in every domain" loading="lazy" />
+        <img class="theme-dark" src="assets/chart_domains_dark.svg" alt="Model quality across four domains, Invoice, EPO, SNIK and ChemROF; the frontier models stay clustered and Gemma trails in every domain" loading="lazy" />
+      </figure>
+    </div>
+
+    <p class="res-note">BERTScore F1; cost per 1,000 explanations on raw-Turtle (Mode C) prompting. The full picture - all four models, three prompt strategies, the prompt-mode tie and the consistency checks - is in the repository.</p>
   </div>
 </section>
 
